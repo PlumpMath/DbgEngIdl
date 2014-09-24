@@ -145,7 +145,7 @@ namespace DbgEngIdl
         private static int WriteStructTypeDef( StringBuilder output, string[] hpp, int i, bool isUnion = false )
         {
             var line = hpp[i].Trim();
-            output.AppendLine(line).AppendLine("{");
+            output.AppendLine(line);
 
             var structName = line.Substring(String.Format("typedef {0} _", isUnion ? "union" : "struct").Length);
             if ( structName.EndsWith("{") )
@@ -155,6 +155,7 @@ namespace DbgEngIdl
             }
             else
             {
+                output.AppendLine("{");
                 i += 2;
             }
 
