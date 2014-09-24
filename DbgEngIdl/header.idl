@@ -137,11 +137,22 @@ library DbgEng
 // Somehow these typedefs are missing
 //////////////////////////////////////////////////////////////
 
+    typedef BOOL   *PBOOL;
     typedef ULONG  *PULONG;
     typedef CHAR   *PSTR;
     typedef WCHAR  *PWSTR;
+    typedef char   *va_list;//??
+
     typedef const CHAR  *PCSTR;
     typedef const WCHAR *PCWSTR;
+
+    typedef void   *FARPROC;//??
+
+    typedef struct _WINDBG_EXTENSION_APIS32* PWINDBG_EXTENSION_APIS32;
+    typedef struct _WINDBG_EXTENSION_APIS64* PWINDBG_EXTENSION_APIS64;
+
+    typedef struct _MEMORY_BASIC_INFORMATION64* PMEMORY_BASIC_INFORMATION64;
+
 
 ///////////////////////////////////////////////////////////////
 // Start Generated Code

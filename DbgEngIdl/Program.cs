@@ -55,6 +55,7 @@ namespace DbgEngIdl
 
                     intDefs.Add(name, guid);
 
+                    output.AppendLine();
                     output.AppendLine("interface " + name + ";");
                     output.AppendLine("typedef " + typedef);
 
@@ -182,7 +183,7 @@ namespace DbgEngIdl
 
                         sep = line.IndexOf(' ', sep + 1);
                         var used = type.Length + 1;
-                        type = line.Substring(used, sep - used); 
+                        type = line.Substring(used, sep - used);
                     }
                     output.Append(ToIdlType(type));
                     output.AppendLine(line.Substring(sep));
@@ -210,13 +211,15 @@ namespace DbgEngIdl
                   .AppendLine("{")
                   ;
 
-            var methodStart = "STDMETHOD(";
+            var methodStart = "STDMETHOD";
             var inMethod = false;
             for ( ; (line = hpp[i].Trim()) != "};"; i++ )
             {
-                if ( line.StartsWith(methodStart) )
+                if ( !inMethod && line.StartsWith(methodStart) )
                 {
-                    var methodName = line.Substring(methodStart.Length, line.IndexOf(')') - methodStart.Length);
+                    var L = line.IndexOf('(') + 1;
+                    var R = line.IndexOf(')');
+                    var methodName = line.Substring(L, R - L);
                     if ( methodName == "QueryInterface" )
                     {
                         i += 10;
@@ -232,11 +235,20 @@ namespace DbgEngIdl
                     line = Regex.Replace(line, @" *?/\*.*?\*/ *", " ");
                     var parts = line.Split(' ');
                     output.Append("        ");
+                    if ( parts[1] == "_Reserved_" )
+                    {
+                        parts[1] = parts[2];
+                        parts[2] = parts[3];
+                    }
                     output.Append(ToIdlAttr(parts[0])).Append(' ')
                           .Append(ToIdlType(parts[1])).Append(' ')
                           .AppendLine(parts[2]);
                 }
-                else if ( line.StartsWith(")") )
+                else if ( inMethod && line.StartsWith(".") )
+                {
+                    output.AppendLine("        SAFEARRAY(VARIANT)");
+                }
+                else if ( inMethod && line.StartsWith(")") )
                 {
                     output.AppendLine("    );");
                     inMethod = false;
