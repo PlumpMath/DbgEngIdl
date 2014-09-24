@@ -101,20 +101,9 @@ namespace DbgEngIdl
                 }
             }
 
-            var enumGroups = from pair in constants
-                             let category = pair.Key.Substring(0, pair.Key.IndexOf('_', 7))
-                             group new { name = pair.Key.Substring(category.Length + 1), value = pair.Value } by category;
-
-
-            foreach ( var enumGroup in enumGroups )
+            foreach ( var constant in constants )
             {
-                output.AppendLine("enum " + CamelCase(enumGroup.Key) + " {");
-                foreach ( var pair in enumGroup )
-                {
-                    output.AppendFormat("    {0} = {1},", CamelCase(pair.name), pair.value).AppendLine();
-                }
-                output.Length -= 3;
-                output.AppendLine().AppendLine("};").AppendLine();
+                output.AppendFormat("#define {0} {1}", constant.Key, constant.Value).AppendLine();
             }
         }
 
