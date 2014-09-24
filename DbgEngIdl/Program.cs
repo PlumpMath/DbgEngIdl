@@ -202,7 +202,7 @@ namespace DbgEngIdl
                   ;
 
             var methodStart = "STDMETHOD";
-            var inMethod = false;
+            bool inMethod = false, paramWasOptional = false;
             for ( ; (line = hpp[i].Trim()) != "};"; i++ )
             {
                 if ( !inMethod && line.StartsWith(methodStart) )
@@ -218,6 +218,7 @@ namespace DbgEngIdl
                     {
                         output.Append("    HRESULT ").Append(methodName).AppendLine("(");
                         inMethod = true;
+                        paramWasOptional = false;
                     }
                 }
                 else if ( inMethod && line.StartsWith("_") )
@@ -230,7 +231,7 @@ namespace DbgEngIdl
                         parts[1] = parts[2];
                         parts[2] = parts[3];
                     }
-                    output.Append(ToIdlAttr(parts[0])).Append(' ')
+                    output.Append(ToIdlAttr(parts[0], ref paramWasOptional)).Append(' ')
                           .Append(ToIdlType(parts[1])).Append(' ')
                           .AppendLine(parts[2]);
                 }
@@ -241,7 +242,7 @@ namespace DbgEngIdl
                 else if ( inMethod && line.StartsWith(")") )
                 {
                     output.AppendLine("    );");
-                    inMethod = false;
+                    inMethod = paramWasOptional = false;
                 }
             }
 
@@ -249,7 +250,7 @@ namespace DbgEngIdl
             return i;
         }
 
-        private static string ToIdlAttr( string cppAttr )
+        private static string ToIdlAttr( string cppAttr, ref bool wasOptional )
         {
             var result = new StringBuilder("[");
 
@@ -266,9 +267,10 @@ namespace DbgEngIdl
                 result.Append("in,out");
             }
 
-            if ( cppAttr.Contains("_opt_") )
+            if ( cppAttr.Contains("_opt_") || wasOptional )
             {
                 result.Append(",optional");
+                wasOptional = true;
             }
 
             var lp = cppAttr.IndexOf('(');
