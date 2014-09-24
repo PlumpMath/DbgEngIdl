@@ -21,7 +21,7 @@ namespace DbgEngIdl
 
         private static string GenerateIdl( string header, string footer, string[] hpp )
         {
-            var output = new StringBuilder(300000);
+            var output = new StringBuilder(512000);
 
             output.Append(header);
 
