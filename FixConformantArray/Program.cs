@@ -41,7 +41,7 @@ namespace FixConformantArray
             }
         }
 
-        private static void InspectIL( string[] ils, List<string> arrayParams, StreamWriter output )
+        private static void InspectIL( string[] ils, Dictionary<string, int> arrayParams, StreamWriter output )
         {
             string currentInterface = null;
             for ( int ilLine = 0; ilLine < ils.Length; ilLine++ )
@@ -64,7 +64,7 @@ namespace FixConformantArray
         }
 
         private static void InspectIlMethod( TextWriter output
-                                           , List<string> arrayParams
+                                           , Dictionary<string, int> arrayParams
                                            , string currentInterface
                                            , string il
                                            , string[] ils
@@ -84,13 +84,14 @@ namespace FixConformantArray
                     continue;
                 }
                 var paramName = parts[2].Remove(parts[2].Length - 1);
-                if ( !arrayParams.Contains(GetArrayParamKey(currentInterface, methodName, paramName)) )
+                var paramKey = GetArrayParamKey(currentInterface, methodName, paramName);
+                if ( !arrayParams.ContainsKey(paramKey) )
                 {
                     output.WriteLine(il);
                     continue;
                 }
 
-                parts[1] = parts[1].Replace("&", "[] marshal([])");
+                parts[1] = parts[1].Replace("&", "[] marshal([ + " + arrayParams[paramKey] + "])");
                 output.Write(il.Substring(0, L));
                 output.WriteLine(String.Join(" ", parts));
             }
@@ -107,9 +108,9 @@ namespace FixConformantArray
         const string IdlMethodStart = "    HRESULT ";
         const string IdlMethodEnd = "    );";
 
-        private static List<string> AnalyzeIdl( string[] idls )
+        private static Dictionary<string, int> AnalyzeIdl( string[] idls )
         {
-            var arrayParamNames = new List<string>();
+            var arrayParamNames = new Dictionary<string, int>();
 
             string currentInterface = null;
             for ( int idlLine = 0; idlLine < idls.Length; idlLine++ )
@@ -128,7 +129,9 @@ namespace FixConformantArray
             return arrayParamNames;
         }
 
-        private static void CollectArrayParamNames( List<string> arrayParamNames
+        static char[] IdlElmCountRSep = new[] { ')', ' ' };
+
+        private static void CollectArrayParamNames( Dictionary<string, int> arrayParamNames
                                                   , string currentInterface
                                                   , string idl
                                                   , string[] idls
@@ -136,17 +139,28 @@ namespace FixConformantArray
                                                   )
         {
             var methodName = idl.Substring(IdlMethodStart.Length, idl.IndexOf('(') - IdlMethodStart.Length);
+            idlLine++;
 
+            var allParams = new List<string>();
+            var arrayParams = new List<KeyValuePair<string, string>>();
             for ( ; !(idl = idls[idlLine]).StartsWith(IdlMethodEnd); idlLine++ )
             {
+                var l = idl.LastIndexOf(' ') + 1;
+                var paramName = idl.Substring(l).Replace("[]", "").Replace(",", "");
+
+                allParams.Add(paramName);
+
                 if ( idl.Contains("size_is") )
                 {
-                    var l = idl.LastIndexOf(' ') + 1;
-                    var r = idl.LastIndexOf('[');
-                    var paramName = idl.Substring(l, r - l);
-
-                    arrayParamNames.Add(GetArrayParamKey(currentInterface, methodName, paramName));
+                    l = idl.IndexOf('(') + 1;
+                    var eCountParam = idl.Substring(l, idl.IndexOfAny(IdlElmCountRSep, l) - l);
+                    arrayParams.Add(new KeyValuePair<string, string>(paramName, eCountParam));
                 }
+            }
+
+            foreach ( var param in arrayParams )
+            {
+                arrayParamNames.Add(GetArrayParamKey(currentInterface, methodName, param.Key), allParams.IndexOf(param.Value));
             }
         }
     }
