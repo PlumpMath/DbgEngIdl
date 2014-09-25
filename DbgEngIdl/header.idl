@@ -14,7 +14,7 @@ library DbgEng
     // missing structs
     const DWORD EXCEPTION_MAXIMUM_PARAMETERS = 15; // maximum number of exception parameters
 
-    typedef struct _EXCEPTION_RECORD64 {
+    typedef struct ExceptionRecord64 {
         DWORD    ExceptionCode;
         DWORD ExceptionFlags;
         LONGLONG ExceptionRecord;
@@ -24,7 +24,7 @@ library DbgEng
         LONGLONG ExceptionInformation[EXCEPTION_MAXIMUM_PARAMETERS];
     } EXCEPTION_RECORD64, *PEXCEPTION_RECORD64;
 
-    typedef struct _IMAGE_FILE_HEADER {
+    typedef struct ImageFileHeader {
         WORD    Machine;
         WORD    NumberOfSections;
         DWORD   TimeDateStamp;
@@ -34,14 +34,14 @@ library DbgEng
         WORD    Characteristics;
     } IMAGE_FILE_HEADER, *PIMAGE_FILE_HEADER;
 
-    typedef struct _IMAGE_DATA_DIRECTORY {
+    typedef struct ImageDataDirectory {
         DWORD   VirtualAddress;
         DWORD   Size;
     } IMAGE_DATA_DIRECTORY, *PIMAGE_DATA_DIRECTORY;
 
-    enum { IMAGE_NUMBEROF_DIRECTORY_ENTRIES  = 16};
+    const DWORD IMAGE_NUMBEROF_DIRECTORY_ENTRIES = 16;
 
-    typedef struct _IMAGE_OPTIONAL_HEADER64 {
+    typedef struct ImageOptionalHeader64 {
         WORD        Magic;
         BYTE        MajorLinkerVersion;
         BYTE        MinorLinkerVersion;
@@ -74,21 +74,21 @@ library DbgEng
         IMAGE_DATA_DIRECTORY DataDirectory[IMAGE_NUMBEROF_DIRECTORY_ENTRIES];
     } IMAGE_OPTIONAL_HEADER64, *PIMAGE_OPTIONAL_HEADER64;
 
-    typedef struct _IMAGE_NT_HEADERS64 {
+    typedef struct ImageNtHeaders64 {
         DWORD Signature;
         IMAGE_FILE_HEADER FileHeader;
         IMAGE_OPTIONAL_HEADER64 OptionalHeader;
     } IMAGE_NT_HEADERS64, *PIMAGE_NT_HEADERS64;
 
-    struct _WINDBG_EXTENSION_APIS32 {
+    typedef struct WindbgExtensionApis32 {
         DWORD NotSupported;
-    };
+    } WINDBG_EXTENSION_APIS32, *PWINDBG_EXTENSION_APIS32;
 
-    struct _WINDBG_EXTENSION_APIS64 {
+    typedef struct WindbgExtensionApis64 {
         DWORD NotSupported;
-    };
+    } WINDBG_EXTENSION_APIS64, *PWINDBG_EXTENSION_APIS64;
 
-    struct _MEMORY_BASIC_INFORMATION64 {
+    typedef struct MemoryBasicInformation64 {
         ULONGLONG BaseAddress;
         ULONGLONG AllocationBase;
         DWORD     AllocationProtect;
@@ -98,7 +98,7 @@ library DbgEng
         DWORD     Protect;
         DWORD     Type;
         DWORD     __alignment2;
-    };
+    } MEMORY_BASIC_INFORMATION64, *PMEMORY_BASIC_INFORMATION64;
 
     ///////////////////////////////////////////////////////////
     // missing defines
@@ -107,31 +107,31 @@ library DbgEng
     // dwCreationFlag values
     //
 
-    enum CreationFlag { DEBUG_PROCESS =0x00000001,
-    DEBUG_ONLY_THIS_PROCESS           =0x00000002,
-    CREATE_SUSPENDED                  =0x00000004,
-    DETACHED_PROCESS                  =0x00000008,
-    CREATE_NEW_CONSOLE                =0x00000010,
-    NORMAL_PRIORITY_CLASS             =0x00000020,
-    IDLE_PRIORITY_CLASS               =0x00000040,
-    HIGH_PRIORITY_CLASS               =0x00000080,
-    REALTIME_PRIORITY_CLASS           =0x00000100,
-    CREATE_NEW_PROCESS_GROUP          =0x00000200,
-    CREATE_UNICODE_ENVIRONMENT        =0x00000400,
-    CREATE_SEPARATE_WOW_VDM           =0x00000800,
-    CREATE_SHARED_WOW_VDM             =0x00001000,
-    CREATE_FORCEDOS                   =0x00002000,
-    BELOW_NORMAL_PRIORITY_CLASS       =0x00004000,
-    ABOVE_NORMAL_PRIORITY_CLASS       =0x00008000,
-    STACK_SIZE_PARAM_IS_A_RESERVATION =0x00010000,
-    CREATE_BREAKAWAY_FROM_JOB         =0x01000000,
-    CREATE_PRESERVE_CODE_AUTHZ_LEVEL  =0x02000000,
-    CREATE_DEFAULT_ERROR_MODE         =0x04000000,
-    CREATE_NO_WINDOW                  =0x08000000,
-    PROFILE_USER                      =0x10000000,
-    PROFILE_KERNEL                    =0x20000000,
-    PROFILE_SERVER                    =0x40000000,
-    CREATE_IGNORE_SYSTEM_DEFAULT      =0x80000000};
+    enum CreationFlag { DebugProcess = 0x00000001,
+    DebugOnlyThisProcess             = 0x00000002,
+    CreateSuspended                  = 0x00000004,
+    DetachedProcess                  = 0x00000008,
+    CreateNewConsole                 = 0x00000010,
+    NormalPriorityClass              = 0x00000020,
+    IdlePriorityClass                = 0x00000040,
+    HighPriorityClass                = 0x00000080,
+    RealtimePriorityClass            = 0x00000100,
+    CreateNewProcessGroup            = 0x00000200,
+    CreateUnicodeEnvironment         = 0x00000400,
+    CreateSeparateWowVdm             = 0x00000800,
+    CreateSharedWowVdm               = 0x00001000,
+    CreateForcedos                   = 0x00002000,
+    BelowNormalPriorityClass         = 0x00004000,
+    AboveNormalPriorityClass         = 0x00008000,
+    StackSizeParamIsAReservation     = 0x00010000,
+    CreateBreakawayFromJob           = 0x01000000,
+    CreatePreserveCodeAuthzLevel     = 0x02000000,
+    CreateDefaultErrorMode           = 0x04000000,
+    CreateNoWindow                   = 0x08000000,
+    ProfileUser                      = 0x10000000,
+    ProfileKernel                    = 0x20000000,
+    ProfileServer                    = 0x40000000,
+    CreateIgnoreSystemDefault        = 0x80000000};
 
 //////////////////////////////////////////////////////////////
 // Somehow these typedefs are missing
@@ -147,12 +147,6 @@ library DbgEng
     typedef const WCHAR *PCWSTR;
 
     typedef void   *FARPROC;//??
-
-    typedef struct _WINDBG_EXTENSION_APIS32* PWINDBG_EXTENSION_APIS32;
-    typedef struct _WINDBG_EXTENSION_APIS64* PWINDBG_EXTENSION_APIS64;
-
-    typedef struct _MEMORY_BASIC_INFORMATION64* PMEMORY_BASIC_INFORMATION64;
-
 
 ///////////////////////////////////////////////////////////////
 // Start Generated Code
