@@ -164,9 +164,10 @@ namespace DbgEngIdl
                 }
                 else
                 {
+                    output.Append("    ");
+
                     var sep = line.IndexOf(' ');
                     var type = line.Substring(0, sep);
-                    output.Append("    ");
                     if ( type == "IN" || type == "OUT" )
                     {
                         //output.Append('[').Append(type.ToLower()).Append("] ");
@@ -175,8 +176,15 @@ namespace DbgEngIdl
                         var used = type.Length + 1;
                         type = line.Substring(used, sep - used);
                     }
-                    output.Append(ToIdlType(type));
-                    output.AppendLine(line.Substring(sep));
+
+                    type = ToIdlType(type);
+                    if ( type.EndsWith("STR") )
+                    {
+                        output.Append("[string] ");
+                    }
+
+                    output.Append(type)
+                          .AppendLine(line.Substring(sep));
                 }
             }
 
