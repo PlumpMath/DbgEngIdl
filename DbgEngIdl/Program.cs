@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace DbgEngIdl
 {
-    class Program
+    public class Program
     {
-        static void Main( string[] args )
+        public static void Main( string[] args )
         {
             var header = File.ReadAllText("header.idl");
             var footer = File.ReadAllText("footer.idl");
