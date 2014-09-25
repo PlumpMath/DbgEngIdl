@@ -225,19 +225,20 @@ namespace DbgEngIdl
                 {
                     line = Regex.Replace(line, @" *?/\*.*?\*/ *", " ");
                     var parts = line.Split(' ');
-                    output.Append("        ");
                     if ( parts[1] == "_Reserved_" )
                     {
                         parts[1] = parts[2];
                         parts[2] = parts[3];
                     }
-                    output.Append(ToIdlAttr(parts[0], ref paramWasOptional)).Append(' ')
+
+                    output.Append("        ")
+                          .Append(ToIdlAttr(parts[0], ref paramWasOptional, parts[1])).Append(' ')
                           .Append(ToIdlType(parts[1])).Append(' ')
                           .AppendLine(parts[2]);
                 }
                 else if ( inMethod && line.StartsWith(".") )
                 {
-                    output.AppendLine("        SAFEARRAY(VARIANT)");
+                    output.AppendLine("        [optional] SAFEARRAY(VARIANT)");
                 }
                 else if ( inMethod && line.StartsWith(")") )
                 {
@@ -250,8 +251,10 @@ namespace DbgEngIdl
             return i;
         }
 
-        private static string ToIdlAttr( string cppAttr, ref bool wasOptional )
+        private static string ToIdlAttr( string cppAttr, ref bool wasOptional, string type )
         {
+            // http://msdn.microsoft.com/en-us/library/hh916382.aspx
+
             var result = new StringBuilder("[");
 
             if ( cppAttr.StartsWith("_In_") )
@@ -273,15 +276,32 @@ namespace DbgEngIdl
                 wasOptional = true;
             }
 
-            var lp = cppAttr.IndexOf('(');
-            if ( lp > 0 )
+            // http://msdn.microsoft.com/en-us/library/windows/desktop/aa366731(v=vs.85).aspx
+
+            if ( type.EndsWith("STR") )
             {
-                var param = cppAttr.Substring(lp + 1, cppAttr.Length - lp - 2);
-                if ( cppAttr.Contains("_to_") )
+                result.Append(",string");
+            }
+            else
+            {
+                var lp = cppAttr.IndexOf('(');
+                if ( lp > 0 )
                 {
-                    param = param.Split(',')[0];
+                    var param = cppAttr.Substring(lp + 1, cppAttr.Length - lp - 2);
+                    if ( cppAttr.Contains("_to_") )
+                    {
+                        param = param.Split(',')[0];
+                    }
+                    if ( !cppAttr.Contains("_bytes_") )
+                    {
+                        if ( type.StartsWith("P") )
+                        {
+                            type = type.Substring(1);
+                        }
+                        param = String.Format("{0} * sizeof({1})", param, type);
+                    }
+                    result.AppendFormat(",size_is({0})", param);
                 }
-                result.AppendFormat(",{0}_is({1})", (cppAttr.Contains("_bytes_") ? "size" : "length"), param);
             }
 
             return result.Append(']').ToString();
