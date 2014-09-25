@@ -83,7 +83,16 @@ namespace FixConformantArray
                     output.WriteLine(il);
                     continue;
                 }
-                var paramName = parts[2].Remove(parts[2].Length - 1);
+
+                var typeIdx = 1;
+                var paramName = parts[2];
+                if ( parts[typeIdx] == "valuetype" )
+                {
+                    typeIdx = 2;
+                    paramName = parts[3];
+                }
+                paramName = paramName.Substring(0, paramName.Length - 1);
+
                 var paramKey = GetArrayParamKey(currentInterface, methodName, paramName);
                 if ( !arrayParams.ContainsKey(paramKey) )
                 {
@@ -91,7 +100,7 @@ namespace FixConformantArray
                     continue;
                 }
 
-                parts[1] = parts[1].Replace("&", "[] marshal([ + " + arrayParams[paramKey] + "])");
+                parts[typeIdx] = parts[typeIdx].Replace("&", "[] marshal([ + " + arrayParams[paramKey] + "])");
                 output.Write(il.Substring(0, L));
                 output.WriteLine(String.Join(" ", parts));
             }
