@@ -178,7 +178,6 @@ namespace DbgEngIdl
                         type = line.Substring(used, sep - used);
                     }
 
-                    type = ToIdlType(type);
                     if ( type.EndsWith("STR") )
                     {
                         output.Append("[string] ");
@@ -240,10 +239,35 @@ namespace DbgEngIdl
                         parts[2] = parts[3];
                     }
 
+                    var cppAttr = parts[0];
+                    var type = parts[1];
+                    var param = parts[2];
+
+                    bool isArray;
                     output.Append("        ")
-                          .Append(ToIdlAttr(parts[0], ref paramWasOptional, parts[1])).Append(' ')
-                          .Append(ToIdlType(parts[1])).Append(' ')
-                          .AppendLine(parts[2]);
+                          .Append(ToIdlAttr(cppAttr, ref paramWasOptional, type, out isArray)).Append(' ');
+
+                    if ( isArray )
+                    {
+                        if ( type == "PVOID" )
+                        {
+                            type = "byte";
+                        }
+                        if ( type.StartsWith("P") )
+                        {
+                            type = type.Substring(1);
+                        }
+                        if ( param.EndsWith(",") )
+                        {
+                            param = param.Replace(",", "[],");
+                        }
+                        else
+                        {
+                            param += "[]";
+                        }
+                    }
+
+                    output.Append(type).Append(' ').AppendLine(param);
                 }
                 else if ( inMethod && line.StartsWith(".") )
                 {
@@ -260,7 +284,7 @@ namespace DbgEngIdl
             return i;
         }
 
-        private static string ToIdlAttr( string cppAttr, ref bool wasOptional, string type )
+        private static string ToIdlAttr( string cppAttr, ref bool wasOptional, string type, out bool isArray )
         {
             // http://msdn.microsoft.com/en-us/library/hh916382.aspx
 
@@ -287,6 +311,7 @@ namespace DbgEngIdl
 
             // http://msdn.microsoft.com/en-us/library/windows/desktop/aa366731(v=vs.85).aspx
 
+            isArray = false;
             if ( type.EndsWith("STR") )
             {
                 result.Append(",string");
@@ -309,16 +334,13 @@ namespace DbgEngIdl
                         }
                         param = String.Format("{0} * sizeof({1})", param, type);
                     }
+
+                    isArray = true;
                     result.AppendFormat(",size_is({0})", param);
                 }
             }
 
             return result.Append(']').ToString();
-        }
-
-        private static string ToIdlType( string cppType )
-        {
-            return cppType;
         }
     }
 }
