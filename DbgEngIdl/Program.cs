@@ -169,7 +169,7 @@ namespace DbgEngIdl
                     output.Append("    ");
                     if ( type == "IN" || type == "OUT" )
                     {
-                        output.Append('[').Append(type.ToLower()).Append("] ");
+                        //output.Append('[').Append(type.ToLower()).Append("] ");
 
                         sep = line.IndexOf(' ', sep + 1);
                         var used = type.Length + 1;
